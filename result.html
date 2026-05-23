@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Résultat — HabariCheck</title>
+  {% load static %}
+  <link rel="stylesheet" href="{% static 'detector/css/style.css' %}" />
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=Syne:wght@400;600;800&display=swap" rel="stylesheet">
+</head>
+<body class="result-page">
+
+  <header class="site-header">
+    <div class="header-inner">
+      <div class="logo">
+        <a href="{% url 'index' %}" style="text-decoration:none;color:inherit;">
+          <span class="logo-icon">🔍</span>
+          <span class="logo-text">Habari<strong>Check</strong></span>
+        </a>
+      </div>
+      <nav class="header-nav">
+        <a href="{% url 'index' %}" class="nav-link">Analyser</a>
+        <a href="{% url 'history' %}" class="nav-link">Historique</a>
+      </nav>
+    </div>
+  </header>
+
+  <main class="main-content result-main">
+
+    <div class="result-verdict {% if prediction.is_fake %}verdict-fake{% else %}verdict-real{% endif %}">
+      <div class="verdict-icon">
+        {% if prediction.is_fake %}⚠️{% else %}✅{% endif %}
+      </div>
+      <div class="verdict-label">
+        {% if prediction.is_fake %}
+          FAKE NEWS DÉTECTÉE
+        {% else %}
+          INFORMATION FIABLE
+        {% endif %}
+      </div>
+      <div class="verdict-lang">
+        {% if language == 'sw' %}🇹🇿 Swahili{% else %}🇳🇬 Haoussa{% endif %}
+      </div>
+    </div>
+
+    {% if result.demo_mode %}
+    <div class="demo-banner">
+      ⚠️ <strong>Mode démonstration</strong> — Modèle non chargé. Placez votre modèle AfriBERTa fine-tuné dans <code>model/fake_news_model/</code>
+    </div>
+    {% endif %}
+
+    <div class="result-details-grid">
+
+      <div class="detail-card confidence-card">
+        <h3>Niveau de confiance</h3>
+        <div class="confidence-bar-container">
+          <div class="confidence-bar {% if prediction.is_fake %}bar-fake{% else %}bar-real{% endif %}"
+               style="width: {{ prediction.confidence }}%"></div>
+        </div>
+        <div class="confidence-number">{{ prediction.confidence }}%</div>
+      </div>
+
+      <div class="detail-card proba-card">
+        <h3>Distribution des probabilités</h3>
+        <div class="proba-row">
+          <span class="proba-label real-label">✅ Vraie info</span>
+          <div class="proba-bar-wrap">
+            <div class="proba-bar real-bar" style="width: {{ prediction.prob_vraie }}%"></div>
+          </div>
+          <span class="proba-pct">{{ prediction.prob_vraie }}%</span>
+        </div>
+        <div class="proba-row">
+          <span class="proba-label fake-label">❌ Fake news</span>
+          <div class="proba-bar-wrap">
+            <div class="proba-bar fake-bar" style="width: {{ prediction.prob_fausse }}%"></div>
+          </div>
+          <span class="proba-pct">{{ prediction.prob_fausse }}%</span>
+        </div>
+      </div>
+
+    </div>
+
+    <div class="analyzed-text-card">
+      <h3>Texte analysé <span class="text-lang">({{ language_name }})</span></h3>
+      <blockquote class="analyzed-text">{{ text }}</blockquote>
+    </div>
+
+    <div class="feedback-section">
+      <h3>Cette analyse est-elle correcte ?</h3>
+      <p>Si vous pensez que le résultat est incorrect, signalez-le.</p>
+      <form method="POST" action="{% url 'submit_feedback' prediction.id %}">
+        {% csrf_token %}
+        <textarea
+          name="comment"
+          placeholder="Expliquez pourquoi vous pensez que cette classification est incorrecte..."
+          rows="3"
+        ></textarea>
+        <button type="submit" class="btn-feedback">Signaler une erreur</button>
+      </form>
+    </div>
+
+    <div class="result-actions">
+      <a href="{% url 'index' %}" class="btn-new-analysis">← Nouvelle analyse</a>
+      <a href="{% url 'history' %}" class="btn-history">Voir l'historique</a>
+    </div>
+
+  </main>
+
+  <footer class="site-footer">
+    <p>HabariCheck &copy; 2024 — Détection de fake news sanitaires en langues africaines</p>
+  </footer>
+
+  <script src="{% static 'detector/js/app.js' %}"></script>
+</body>
+</html>

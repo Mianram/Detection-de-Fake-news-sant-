@@ -1,0 +1,168 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>HabariCheck — Détecteur de Fake News Sanitaires</title>
+  {% load static %}
+  <link rel="stylesheet" href="{% static 'detector/css/style.css' %}" />
+ </head>
+<body>
+
+  <header class="site-header">
+    <div class="header-inner">
+      <div class="logo">
+        <span class="logo-icon">🔍</span>
+        <span class="logo-text">FakeNews<strong>Check</strong></span>
+      </div>
+      <nav class="header-nav">
+        <a href="{% url 'index' %}" class="nav-link active">Analyser</a>
+        <a href="{% url 'history' %}" class="nav-link">Historique</a>
+        <a href="/admin/" class="nav-link">Admin</a>
+      </nav>
+    </div>
+  </header>
+
+  <section class="hero">
+    <div class="hero-inner">
+      <div class="lang-badges">
+        <span class="badge badge-sw">🇹🇿 Swahili</span>
+        <span class="badge badge-ha">🇳🇬 Haoussa</span>
+      </div>
+      <h1 class="hero-title">
+        Détectez les<br><em>Fake News Sanitaires</em>
+      </h1>
+      <p class="hero-subtitle">
+        Basé sur AfriBERTa — Intelligence Artificielle dédiée aux langues africaines
+      </p>
+    </div>
+    <div class="hero-stats">
+      <div class="stat-pill">
+        <span class="stat-num">{{ stats.total }}</span>
+        <span class="stat-label">Analyses</span>
+      </div>
+      <div class="stat-pill fake">
+        <span class="stat-num">{{ stats.fake }}</span>
+        <span class="stat-label">Fake News</span>
+      </div>
+      <div class="stat-pill real">
+        <span class="stat-num">{{ stats.real }}</span>
+        <span class="stat-label">Vraies Info</span>
+      </div>
+    </div>
+  </section>
+
+  <main class="main-content">
+    <div class="analyzer-card">
+      <h2 class="card-title">Soumettre un texte</h2>
+
+      {% if messages %}
+        {% for message in messages %}
+          <div class="alert alert-{{ message.tags }}">{{ message }}</div>
+        {% endfor %}
+      {% endif %}
+
+      <form method="POST" action="{% url 'analyze' %}" id="analyze-form">
+        {% csrf_token %}
+
+        <div class="lang-selector">
+          <p class="field-label">Choisir la langue :</p>
+          <div class="radio-group">
+            {% for radio in form.language %}
+              <label class="radio-label {% if forloop.first %}active{% endif %}" id="label-{{ radio.data.value }}">
+                {{ radio.tag }}
+                {{ radio.choice_label }}
+              </label>
+            {% endfor %}
+          </div>
+          {% if form.language.errors %}
+            <p class="field-error">{{ form.language.errors.0 }}</p>
+          {% endif %}
+        </div>
+
+        <div class="text-field">
+          <label class="field-label" for="news-text">Texte à analyser :</label>
+          <textarea
+            name="text"
+            id="news-text"
+            rows="8"
+            maxlength="5000"
+            placeholder="Swahili: Bandika habari unayotaka kuchunguza hapa...&#10;Haoussa: Rubuta labari da kake son bincika anan..."
+          >{{ form.text.value|default:'' }}</textarea>
+          <div class="text-meta">
+            <span id="char-count">0 / 5000 caractères</span>
+          </div>
+          {% if form.text.errors %}
+            <p class="field-error">{{ form.text.errors.0 }}</p>
+          {% endif %}
+        </div>
+
+        <button type="submit" class="btn-analyze" id="submit-btn">
+          <span class="btn-text">Analyser le texte</span>
+          <span class="btn-loading" style="display:none;">Analyse en cours...</span>
+          <span class="btn-icon">→</span>
+        </button>
+      </form>
+    </div>
+
+    {% if recent_predictions %}
+    <div class="recent-card">
+      <h3 class="card-title">Analyses récentes</h3>
+      <ul class="predictions-list">
+        {% for p in recent_predictions %}
+        <li class="prediction-item {% if p.is_fake %}is-fake{% else %}is-real{% endif %}">
+          <div class="pred-lang">
+            {% if p.language == 'sw' %}🇹🇿{% else %}🇳🇬{% endif %}
+            {{ p.get_language_display }}
+          </div>
+          <div class="pred-text">{{ p.text|truncatechars:80 }}</div>
+          <div class="pred-result">
+            <span class="result-badge {% if p.is_fake %}fake{% else %}real{% endif %}">
+              {{ p.label }}
+            </span>
+            <span class="pred-confidence">{{ p.confidence }}%</span>
+          </div>
+        </li>
+        {% endfor %}
+      </ul>
+    </div>
+    {% endif %}
+
+    <div class="info-card">
+      <h3>À propos du modèle</h3>
+      <p>
+        Ce système utilise <strong>AfriBERTa</strong>, un modèle de langage pré-entraîné
+        sur des textes africains, fine-tuné sur des données sanitaires en <strong>Swahili</strong>
+        et <strong>Haoussa</strong> pour détecter les informations médicales trompeuses.
+      </p>
+      <div class="info-grid">
+        <div class="info-item">
+          <span class="info-icon">🤖</span>
+          <span>AfriBERTa fine-tuné</span>
+        </div>
+        <div class="info-item">
+          <span class="info-icon">🏥</span>
+          <span>Domaine sanitaire</span>
+        </div>
+        <div class="info-item">
+          <span class="info-icon">🌍</span>
+          <span>Langues africaines</span>
+        </div>
+        <div class="info-item">
+          <span class="info-icon">⚡</span>
+          <span>Analyse en temps réel</span>
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <footer class="site-footer">
+    <p>HabariCheck &copy; 2024 — Détection de fake news sanitaires en langues africaines</p>
+    <p class="footer-note">
+      <em>Habari</em> (Swahili: Information) &middot; <em>Labarai</em> (Haoussa: Nouvelles)
+    </p>
+  </footer>
+
+  <script src="{% static 'detector/js/app.js' %}"></script>
+</body>
+</html>
