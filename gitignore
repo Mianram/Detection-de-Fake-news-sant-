@@ -1,0 +1,14 @@
+venv/
+__pycache__/
+*.pyc
+detector/
+fake_news_projet/
+.env
+media/
+staticfiles/
+model/
+db.sqlite3
+manage.py
+Predict.py
+README.md
+requirements.txt
