@@ -1,4 +1,4 @@
-# HabariCheck — Détecteur de Fake News Sanitaires
+# FakeNewsChek — Détecteur de Fake News Sanitaires
 ### Swahili 🇹🇿 & Haoussa 🇳🇬 | Powered by AfriBERTa
 
 ---
@@ -10,8 +10,8 @@ fake_news_project/
 ├── manage.py
 ├── requirements.txt
 ├── model/
-│   ├── fake_news_model/     ← Votre modèle fine-tuné (à placer ici)
-│   ├── tokenizer/           ← Votre tokenizer (à placer ici)
+│   ├── fake_news_model/    
+│   ├── tokenizer/         
 │   └── predict.py
 ├── notebooks/
 │   └── fine_tuning_afriberta.ipynb
